@@ -1,0 +1,20 @@
+# Ignore model directories inside full_pipeline
+/full_pipeline/models/
+/full_pipeline/SMPL_python_v.1.1.0/smpl/
+/models/
+
+# Optional: Python and VSCode defaults
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.log
+*.tmp
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# VSCode settings
+.vscode/
