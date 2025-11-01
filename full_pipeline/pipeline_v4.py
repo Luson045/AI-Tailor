@@ -7,13 +7,15 @@ import pyrender
 import trimesh
 from tqdm import trange
 from scipy.spatial.transform import Rotation as R
+import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D
 
 # ========== CONFIG ==========
 # Use front + left + right views for best results
 IMAGES = {
-    'front': "dataset/image9.jpg",
-    'left': "dataset/image9_left.jpg",   # Left side view (person's left visible)
-    'right': "dataset/image9_right.jpg", # Right side view (person's right visible)
+    'front': "dataset/image10.jpg",
+    'left': "dataset/image10_right.jpg",   # Left side view (person's left visible)
+    'right': "dataset/image10_left.jpg", # Right side view (person's right visible)
 }
 MODEL_PATH = "full_pipeline/models/"
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -140,7 +142,25 @@ for view_idx, (kps, conf, view_name) in enumerate(zip(all_keypoints, all_confide
     all_weights.append(torch.tensor(conf_selected, dtype=torch.float32, device=DEVICE))
 
 print(f"\n[INFO] Using {len(all_targets)} view(s) for optimization")
+print("[INFO] Visualizing pre-fitting 3D keypoints...")
 
+fig = plt.figure(figsize=(8, 8))
+ax = fig.add_subplot(111, projection='3d')
+
+colors = ['r', 'g', 'b', 'y', 'm', 'c']
+for i, (target, name) in enumerate(zip(all_targets, all_view_names)):
+    pts = target.detach().cpu().numpy()
+    ax.scatter(pts[:, 0], pts[:, 2], -pts[:, 1],  # flip Y for upright view
+               s=40, c=colors[i % len(colors)], label=name, alpha=0.8)
+
+ax.set_title("3D Keypoints Point Cloud (Before SMPL-X Fitting)")
+ax.set_xlabel("X")
+ax.set_ylabel("Z")
+ax.set_zlabel("Y (height)")
+ax.legend()
+ax.view_init(elev=20, azim=70)
+plt.tight_layout()
+plt.show()
 # ========== INITIALIZE SMPL PARAMETERS ==========
 betas = torch.zeros([1, NUM_BETAS], dtype=torch.float32, device=DEVICE, requires_grad=True)
 body_pose = torch.zeros([1, 21 * 3], dtype=torch.float32, device=DEVICE, requires_grad=True)
