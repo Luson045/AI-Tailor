@@ -1,0 +1,14 @@
+{
+    "model_type": "SMPL-X",
+    "vertex_count": 10475,
+    "measurements_mm": {
+        "Acr": 762.21,
+        "Rad": 744.82,
+        "Styl": 690.74,
+        "Troc": 517.27,
+        "Tib": 817.15,
+        "Mean": 706.44
+    },
+    "warning": "These measurements use APPROXIMATE landmark indices and should be validated",
+    "recommendation": "Use SMPL-Anthropometry library: https://github.com/DavidBoja/SMPL-Anthropometry"
+}

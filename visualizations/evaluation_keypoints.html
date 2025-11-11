@@ -1,0 +1,1002 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3D Mesh Landmark Picker</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #fff;
+            overflow: hidden;
+        }
+        
+        #container {
+            display: flex;
+            height: 100vh;
+        }
+        
+        #canvas-container {
+            flex: 1;
+            position: relative;
+            background: #1a1a2e;
+            display: flex;
+        }
+        
+        #main-canvas {
+            flex: 2;
+            position: relative;
+        }
+        
+        #reference-canvas {
+            flex: 1;
+            position: relative;
+            border-left: 2px solid rgba(255,255,255,0.1);
+        }
+        
+        #sidebar {
+            width: 380px;
+            background: rgba(26, 26, 46, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 20px;
+            overflow-y: auto;
+            box-shadow: -5px 0 20px rgba(0,0,0,0.3);
+        }
+        
+        h1 {
+            font-size: 24px;
+            margin-bottom: 10px;
+            color: #fff;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .subtitle {
+            font-size: 12px;
+            color: #aaa;
+            margin-bottom: 20px;
+            line-height: 1.5;
+        }
+        
+        .section {
+            background: rgba(255,255,255,0.05);
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .section-title {
+            font-size: 14px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #9f7aea;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .file-input-wrapper {
+            position: relative;
+            overflow: hidden;
+            display: inline-block;
+            width: 100%;
+            margin-bottom: 15px;
+        }
+        
+        .file-input-wrapper input[type=file] {
+            position: absolute;
+            left: -9999px;
+        }
+        
+        .file-input-label {
+            display: block;
+            padding: 12px 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            text-align: center;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 600;
+        }
+        
+        .file-input-label:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        #info {
+            font-size: 13px;
+            line-height: 1.6;
+            color: #ddd;
+        }
+        
+        #info div {
+            margin-bottom: 8px;
+            padding: 8px;
+            background: rgba(0,0,0,0.2);
+            border-radius: 4px;
+        }
+        
+        #info strong {
+            color: #9f7aea;
+            display: inline-block;
+            min-width: 120px;
+        }
+        
+        .landmark-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            margin-bottom: 8px;
+            background: rgba(0,0,0,0.3);
+            border-radius: 6px;
+            border-left: 3px solid #667eea;
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+        
+        .landmark-item:hover {
+            background: rgba(102, 126, 234, 0.2);
+            transform: translateX(5px);
+        }
+        
+        .landmark-item.active {
+            background: rgba(102, 126, 234, 0.4);
+            border-left-width: 5px;
+        }
+        
+        .landmark-name {
+            font-weight: 600;
+            color: #fff;
+            font-size: 13px;
+        }
+        
+        .landmark-desc {
+            font-size: 11px;
+            color: #aaa;
+            margin-top: 2px;
+        }
+        
+        .landmark-value {
+            font-family: 'Courier New', monospace;
+            color: #4ade80;
+            font-weight: bold;
+            font-size: 14px;
+        }
+        
+        .landmark-value.empty {
+            color: #666;
+        }
+        
+        button {
+            padding: 10px 20px;
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+            width: 100%;
+            margin-top: 10px;
+        }
+        
+        button:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(16, 185, 129, 0.4);
+        }
+        
+        button:disabled {
+            background: #555;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        #hover-info {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(0,0,0,0.8);
+            padding: 15px 20px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            pointer-events: none;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+        
+        #hover-info div {
+            margin: 5px 0;
+        }
+        
+        .warning {
+            background: rgba(251, 191, 36, 0.2);
+            border: 1px solid #fbbf24;
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 15px;
+            font-size: 12px;
+            line-height: 1.5;
+        }
+        
+        .warning-title {
+            font-weight: bold;
+            color: #fbbf24;
+            margin-bottom: 5px;
+        }
+        
+        .reference-label {
+            position: absolute;
+            bottom: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.8);
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+            color: #9f7aea;
+            pointer-events: none;
+        }
+        
+        .controls-hint {
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            background: rgba(0,0,0,0.8);
+            padding: 10px 15px;
+            border-radius: 6px;
+            font-size: 11px;
+            pointer-events: none;
+            max-width: 200px;
+        }
+        
+        .controls-hint div {
+            margin: 3px 0;
+            color: #aaa;
+        }
+        
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: rgba(0,0,0,0.2);
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: rgba(102, 126, 234, 0.5);
+            border-radius: 4px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(102, 126, 234, 0.7);
+        }
+
+        .highlight {
+            animation: pulse 1s ease-in-out;
+        }
+
+        @keyframes pulse {
+            0%, 100% { background: rgba(0,0,0,0.3); }
+            50% { background: rgba(102, 126, 234, 0.4); }
+        }
+    </style>
+</head>
+<body>
+    <div id="container">
+        <div id="canvas-container">
+            <div id="main-canvas">
+                <div id="hover-info">
+                    <div>Vertex: <span id="vertex-idx" style="color: #4ade80;">-</span></div>
+                    <div>Position: <span id="vertex-pos" style="color: #60a5fa;">-</span></div>
+                    <div style="margin-top: 10px; color: #aaa; font-size: 12px;">Click to select landmark</div>
+                </div>
+                <div class="controls-hint">
+                    <div><strong style="color: #9f7aea;">Controls:</strong></div>
+                    <div>🖱️ Left Drag: Rotate</div>
+                    <div>🖱️ Right Drag: Pan</div>
+                    <div>🔄 Scroll: Zoom</div>
+                    <div>👆 Click: Select Point</div>
+                </div>
+            </div>
+            <div id="reference-canvas">
+                <div class="reference-label">📍 Click Here on Reference</div>
+            </div>
+        </div>
+        
+        <div id="sidebar">
+            <h1>🎯 Landmark Picker</h1>
+            <div class="subtitle">Interactive tool to find exact vertex indices for anthropometric landmarks</div>
+            
+            <div class="warning">
+                <div class="warning-title">⚠️ Important Note</div>
+                Vertex indices are ONLY consistent for the SAME mesh topology. If Hunyuan generates different meshes, indices will change! You'll need to re-pick landmarks for each new mesh.
+            </div>
+            
+            <div class="section">
+                <div class="section-title">📂 Load Mesh</div>
+                <div class="file-input-wrapper">
+                    <input type="file" id="file-input" accept=".obj">
+                    <label for="file-input" class="file-input-label">Choose OBJ File</label>
+                </div>
+                <div id="info">
+                    <div><strong>Status:</strong> No mesh loaded</div>
+                </div>
+            </div>
+            
+            <div class="section">
+                <div class="section-title">📍 Landmarks (Click landmark to see reference)</div>
+                <div id="landmarks">
+                    <div class="landmark-item" data-landmark="Acr_L">
+                        <div>
+                            <div class="landmark-name">Acr_L</div>
+                            <div class="landmark-desc">Left Acromiale (shoulder tip)</div>
+                        </div>
+                        <div class="landmark-value empty">-</div>
+                    </div>
+                    <div class="landmark-item" data-landmark="Acr_R">
+                        <div>
+                            <div class="landmark-name">Acr_R</div>
+                            <div class="landmark-desc">Right Acromiale</div>
+                        </div>
+                        <div class="landmark-value empty">-</div>
+                    </div>
+                    <div class="landmark-item" data-landmark="Rad_L">
+                        <div>
+                            <div class="landmark-name">Rad_L</div>
+                            <div class="landmark-desc">Left Radiale (elbow)</div>
+                        </div>
+                        <div class="landmark-value empty">-</div>
+                    </div>
+                    <div class="landmark-item" data-landmark="Rad_R">
+                        <div>
+                            <div class="landmark-name">Rad_R</div>
+                            <div class="landmark-desc">Right Radiale</div>
+                        </div>
+                        <div class="landmark-value empty">-</div>
+                    </div>
+                    <div class="landmark-item" data-landmark="Styl_L">
+                        <div>
+                            <div class="landmark-name">Styl_L</div>
+                            <div class="landmark-desc">Left Stylion (wrist)</div>
+                        </div>
+                        <div class="landmark-value empty">-</div>
+                    </div>
+                    <div class="landmark-item" data-landmark="Styl_R">
+                        <div>
+                            <div class="landmark-name">Styl_R</div>
+                            <div class="landmark-desc">Right Stylion</div>
+                        </div>
+                        <div class="landmark-value empty">-</div>
+                    </div>
+                    <div class="landmark-item" data-landmark="Troc_L">
+                        <div>
+                            <div class="landmark-name">Troc_L</div>
+                            <div class="landmark-desc">Left Trochanterion (hip)</div>
+                        </div>
+                        <div class="landmark-value empty">-</div>
+                    </div>
+                    <div class="landmark-item" data-landmark="Troc_R">
+                        <div>
+                            <div class="landmark-name">Troc_R</div>
+                            <div class="landmark-desc">Right Trochanterion</div>
+                        </div>
+                        <div class="landmark-value empty">-</div>
+                    </div>
+                    <div class="landmark-item" data-landmark="Iliocr_L">
+                        <div>
+                            <div class="landmark-name">Iliocr_L</div>
+                            <div class="landmark-desc">Left Iliocristale (hip crest)</div>
+                        </div>
+                        <div class="landmark-value empty">-</div>
+                    </div>
+                    <div class="landmark-item" data-landmark="Iliocr_R">
+                        <div>
+                            <div class="landmark-name">Iliocr_R</div>
+                            <div class="landmark-desc">Right Iliocristale</div>
+                        </div>
+                        <div class="landmark-value empty">-</div>
+                    </div>
+                    <div class="landmark-item" data-landmark="Tib_L">
+                        <div>
+                            <div class="landmark-name">Tib_L</div>
+                            <div class="landmark-desc">Left Tibiale (knee)</div>
+                        </div>
+                        <div class="landmark-value empty">-</div>
+                    </div>
+                    <div class="landmark-item" data-landmark="Tib_R">
+                        <div>
+                            <div class="landmark-name">Tib_R</div>
+                            <div class="landmark-desc">Right Tibiale</div>
+                        </div>
+                        <div class="landmark-value empty">-</div>
+                    </div>
+                </div>
+            </div>
+            
+            <button id="export-btn" disabled>📥 Export Python Code</button>
+            <button id="export-json-btn" disabled>💾 Export JSON</button>
+        </div>
+    </div>
+
+    <script>
+        // Three.js setup
+        let mainScene, mainCamera, mainRenderer, mainControls;
+        let refScene, refCamera, refRenderer, refControls;
+        let userMesh, referenceMesh;
+        let raycaster, mouse;
+        let landmarkMarkers = {};
+        let refLandmarkMarker = null;
+        let selectedLandmarks = {};
+        let currentSelectionMode = null;
+        let vertices = null;
+
+        // Landmark positions on reference body (approximate anatomical positions)
+        const referenceLandmarkPositions = {
+            'Acr_L': { x: -0.35, y: 1.35, z: 0.1 },    // Left shoulder
+            'Acr_R': { x: 0.35, y: 1.35, z: 0.1 },     // Right shoulder
+            'Rad_L': { x: -0.4, y: 0.95, z: 0.05 },    // Left elbow
+            'Rad_R': { x: 0.4, y: 0.95, z: 0.05 },     // Right elbow
+            'Styl_L': { x: -0.42, y: 0.6, z: 0.05 },   // Left wrist
+            'Styl_R': { x: 0.42, y: 0.6, z: 0.05 },    // Right wrist
+            'Troc_L': { x: -0.15, y: 0.85, z: 0 },     // Left hip
+            'Troc_R': { x: 0.15, y: 0.85, z: 0 },      // Right hip
+            'Iliocr_L': { x: -0.18, y: 0.95, z: 0 },   // Left hip crest
+            'Iliocr_R': { x: 0.18, y: 0.95, z: 0 },    // Right hip crest
+            'Tib_L': { x: -0.12, y: 0.5, z: 0.05 },    // Left knee
+            'Tib_R': { x: 0.12, y: 0.5, z: 0.05 }      // Right knee
+        };
+
+        function init() {
+            // Main canvas setup
+            const mainContainer = document.getElementById('main-canvas');
+            const mainWidth = mainContainer.clientWidth;
+            const mainHeight = mainContainer.clientHeight;
+            
+            mainScene = new THREE.Scene();
+            mainScene.background = new THREE.Color(0x1a1a2e);
+            
+            mainCamera = new THREE.PerspectiveCamera(45, mainWidth / mainHeight, 0.1, 1000);
+            mainCamera.position.set(0, 1.6, 3);
+            mainCamera.lookAt(0, 1, 0);
+            
+            mainRenderer = new THREE.WebGLRenderer({ antialias: true });
+            mainRenderer.setSize(mainWidth, mainHeight);
+            mainContainer.appendChild(mainRenderer.domElement);
+            
+            // Reference canvas setup
+            const refContainer = document.getElementById('reference-canvas');
+            const refWidth = refContainer.clientWidth;
+            const refHeight = refContainer.clientHeight;
+            
+            refScene = new THREE.Scene();
+            refScene.background = new THREE.Color(0x0f0f1e);
+            
+            refCamera = new THREE.PerspectiveCamera(45, refWidth / refHeight, 0.1, 1000);
+            refCamera.position.set(0, 1.2, 2.5);
+            refCamera.lookAt(0, 1, 0);
+            
+            refRenderer = new THREE.WebGLRenderer({ antialias: true });
+            refRenderer.setSize(refWidth, refHeight);
+            refContainer.appendChild(refRenderer.domElement);
+            
+            // Add orbit controls for main canvas
+            addOrbitControls();
+            
+            // Lighting for both scenes
+            setupLighting(mainScene);
+            setupLighting(refScene);
+            
+            // Create reference human figure
+            createReferenceHuman();
+            
+            raycaster = new THREE.Raycaster();
+            raycaster.params.Points.threshold = 0.05;
+            mouse = new THREE.Vector2();
+            
+            // Event listeners
+            mainRenderer.domElement.addEventListener('mousemove', onMouseMove);
+            mainRenderer.domElement.addEventListener('click', onMouseClick);
+            window.addEventListener('resize', onWindowResize);
+            
+            // Landmark item click handlers
+            document.querySelectorAll('.landmark-item').forEach(item => {
+                item.addEventListener('click', () => {
+                    selectLandmark(item.dataset.landmark);
+                });
+            });
+            
+            animate();
+        }
+        
+        function addOrbitControls() {
+            // Simple orbit controls implementation
+            let isDragging = false;
+            let isPanning = false;
+            let previousMousePosition = { x: 0, y: 0 };
+            
+            mainRenderer.domElement.addEventListener('mousedown', (e) => {
+                if (e.button === 0) isDragging = true;
+                if (e.button === 2) isPanning = true;
+                previousMousePosition = { x: e.clientX, y: e.clientY };
+            });
+            
+            mainRenderer.domElement.addEventListener('mouseup', () => {
+                isDragging = false;
+                isPanning = false;
+            });
+            
+            mainRenderer.domElement.addEventListener('mousemove', (e) => {
+                if (isDragging) {
+                    const deltaX = e.clientX - previousMousePosition.x;
+                    const deltaY = e.clientY - previousMousePosition.y;
+                    
+                    if (userMesh) {
+                        userMesh.rotation.y += deltaX * 0.01;
+                        userMesh.rotation.x += deltaY * 0.01;
+                    }
+                }
+                
+                if (isPanning) {
+                    const deltaX = e.clientX - previousMousePosition.x;
+                    const deltaY = e.clientY - previousMousePosition.y;
+                    
+                    mainCamera.position.x -= deltaX * 0.002;
+                    mainCamera.position.y += deltaY * 0.002;
+                }
+                
+                previousMousePosition = { x: e.clientX, y: e.clientY };
+            });
+            
+            mainRenderer.domElement.addEventListener('wheel', (e) => {
+                e.preventDefault();
+                const delta = e.deltaY * 0.001;
+                mainCamera.position.z += delta;
+                mainCamera.position.z = Math.max(0.5, Math.min(10, mainCamera.position.z));
+            });
+            
+            mainRenderer.domElement.addEventListener('contextmenu', (e) => e.preventDefault());
+        }
+        
+        function setupLighting(scene) {
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+            scene.add(ambientLight);
+            
+            const dirLight1 = new THREE.DirectionalLight(0xffffff, 0.8);
+            dirLight1.position.set(5, 10, 7.5);
+            scene.add(dirLight1);
+            
+            const dirLight2 = new THREE.DirectionalLight(0xffffff, 0.4);
+            dirLight2.position.set(-5, 10, -7.5);
+            scene.add(dirLight2);
+        }
+        
+        function createReferenceHuman() {
+            // Create a simple stick figure / mannequin
+            const material = new THREE.MeshPhongMaterial({ 
+                color: 0x60a5fa,
+                transparent: true,
+                opacity: 0.8
+            });
+            
+            // Head
+            const headGeo = new THREE.SphereGeometry(0.12, 16, 16);
+            const head = new THREE.Mesh(headGeo, material);
+            head.position.set(0, 1.55, 0);
+            
+            // Torso
+            const torsoGeo = new THREE.CylinderGeometry(0.15, 0.18, 0.5, 16);
+            const torso = new THREE.Mesh(torsoGeo, material);
+            torso.position.set(0, 1.1, 0);
+            
+            // Arms
+            const armGeo = new THREE.CylinderGeometry(0.04, 0.04, 0.5, 8);
+            const leftUpperArm = new THREE.Mesh(armGeo, material);
+            leftUpperArm.position.set(-0.35, 1.15, 0);
+            leftUpperArm.rotation.z = Math.PI / 6;
+            
+            const rightUpperArm = new THREE.Mesh(armGeo, material);
+            rightUpperArm.position.set(0.35, 1.15, 0);
+            rightUpperArm.rotation.z = -Math.PI / 6;
+            
+            const leftLowerArm = new THREE.Mesh(armGeo, material);
+            leftLowerArm.position.set(-0.42, 0.75, 0);
+            
+            const rightLowerArm = new THREE.Mesh(armGeo, material);
+            rightLowerArm.position.set(0.42, 0.75, 0);
+            
+            // Legs
+            const legGeo = new THREE.CylinderGeometry(0.06, 0.05, 0.45, 8);
+            const leftUpperLeg = new THREE.Mesh(legGeo, material);
+            leftUpperLeg.position.set(-0.1, 0.65, 0);
+            
+            const rightUpperLeg = new THREE.Mesh(legGeo, material);
+            rightUpperLeg.position.set(0.1, 0.65, 0);
+            
+            const leftLowerLeg = new THREE.Mesh(legGeo, material);
+            leftLowerLeg.position.set(-0.1, 0.25, 0);
+            
+            const rightLowerLeg = new THREE.Mesh(legGeo, material);
+            rightLowerLeg.position.set(0.1, 0.25, 0);
+            
+            // Create group
+            const humanGroup = new THREE.Group();
+            humanGroup.add(head, torso);
+            humanGroup.add(leftUpperArm, rightUpperArm, leftLowerArm, rightLowerArm);
+            humanGroup.add(leftUpperLeg, rightUpperLeg, leftLowerLeg, rightLowerLeg);
+            
+            referenceMesh = humanGroup;
+            refScene.add(referenceMesh);
+        }
+        
+        function selectLandmark(landmarkName) {
+            currentSelectionMode = landmarkName;
+            
+            // Update UI
+            document.querySelectorAll('.landmark-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            document.querySelector(`[data-landmark="${landmarkName}"]`).classList.add('active');
+            
+            // Show reference marker
+            if (refLandmarkMarker) {
+                refScene.remove(refLandmarkMarker);
+            }
+            
+            const pos = referenceLandmarkPositions[landmarkName];
+            if (pos) {
+                const markerGeo = new THREE.SphereGeometry(0.05, 16, 16);
+                const markerMat = new THREE.MeshBasicMaterial({ 
+                    color: 0xff0000,
+                    transparent: true,
+                    opacity: 0.9
+                });
+                refLandmarkMarker = new THREE.Mesh(markerGeo, markerMat);
+                refLandmarkMarker.position.set(pos.x, pos.y, pos.z);
+                refScene.add(refLandmarkMarker);
+                
+                // Add pulsing animation
+                let scale = 1;
+                const pulseInterval = setInterval(() => {
+                    if (refLandmarkMarker && refLandmarkMarker.parent) {
+                        scale = 1 + 0.3 * Math.sin(Date.now() * 0.005);
+                        refLandmarkMarker.scale.set(scale, scale, scale);
+                    } else {
+                        clearInterval(pulseInterval);
+                    }
+                }, 16);
+            }
+        }
+        
+        function onMouseMove(event) {
+            const rect = mainRenderer.domElement.getBoundingClientRect();
+            mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+            mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+            
+            if (userMesh && vertices) {
+                raycaster.setFromCamera(mouse, mainCamera);
+                const intersects = raycaster.intersectObject(userMesh);
+                
+                if (intersects.length > 0) {
+                    const intersect = intersects[0];
+                    const face = intersect.face;
+                    
+                    // Find closest vertex
+                    const vertexIndices = [face.a, face.b, face.c];
+                    const point = intersect.point;
+                    
+                    let closestIdx = vertexIndices[0];
+                    let minDist = Infinity;
+                    
+                    vertexIndices.forEach(idx => {
+                        const vertex = new THREE.Vector3(
+                            vertices[idx * 3],
+                            vertices[idx * 3 + 1],
+                            vertices[idx * 3 + 2]
+                        );
+                        userMesh.localToWorld(vertex);
+                        const dist = vertex.distanceTo(point);
+                        if (dist < minDist) {
+                            minDist = dist;
+                            closestIdx = idx;
+                        }
+                    });
+                    
+                    document.getElementById('vertex-idx').textContent = closestIdx;
+                    const pos = `(${vertices[closestIdx * 3].toFixed(3)}, ${vertices[closestIdx * 3 + 1].toFixed(3)}, ${vertices[closestIdx * 3 + 2].toFixed(3)})`;
+                    document.getElementById('vertex-pos').textContent = pos;
+                    
+                    mainRenderer.domElement.style.cursor = 'crosshair';
+                } else {
+                    document.getElementById('vertex-idx').textContent = '-';
+                    document.getElementById('vertex-pos').textContent = '-';
+                    mainRenderer.domElement.style.cursor = 'default';
+                }
+            }
+        }
+        
+        function onMouseClick(event) {
+            if (!userMesh || !currentSelectionMode || !vertices) return;
+            
+            const rect = mainRenderer.domElement.getBoundingClientRect();
+            mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+            mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+            
+            raycaster.setFromCamera(mouse, mainCamera);
+            const intersects = raycaster.intersectObject(userMesh);
+            
+            if (intersects.length > 0) {
+                const intersect = intersects[0];
+                const face = intersect.face;
+                const vertexIndices = [face.a, face.b, face.c];
+                const point = intersect.point;
+                
+                let closestIdx = vertexIndices[0];
+                let minDist = Infinity;
+                
+                vertexIndices.forEach(idx => {
+                    const vertex = new THREE.Vector3(
+                        vertices[idx * 3],
+                        vertices[idx * 3 + 1],
+                        vertices[idx * 3 + 2]
+                    );
+                    userMesh.localToWorld(vertex);
+                    const dist = vertex.distanceTo(point);
+                    if (dist < minDist) {
+                        minDist = dist;
+                        closestIdx = idx;
+                    }
+                });
+                
+                // Store landmark
+                selectedLandmarks[currentSelectionMode] = closestIdx;
+                
+                // Update UI
+                const item = document.querySelector(`[data-landmark="${currentSelectionMode}"]`);
+                const valueEl = item.querySelector('.landmark-value');
+                valueEl.textContent = closestIdx;
+                valueEl.classList.remove('empty');
+                item.classList.add('highlight');
+                setTimeout(() => item.classList.remove('highlight'), 1000);
+                
+                // Add/update marker on main mesh
+                if (landmarkMarkers[currentSelectionMode]) {
+                    mainScene.remove(landmarkMarkers[currentSelectionMode]);
+                }
+                
+                const markerGeometry = new THREE.SphereGeometry(0.02, 16, 16);
+                const markerMaterial = new THREE.MeshBasicMaterial({ color: 0xff0000 });
+                const marker = new THREE.Mesh(markerGeometry, markerMaterial);
+                
+                marker.position.set(
+                    vertices[closestIdx * 3],
+                    vertices[closestIdx * 3 + 1],
+                    vertices[closestIdx * 3 + 2]
+                );
+                
+                mainScene.add(marker);
+                landmarkMarkers[currentSelectionMode] = marker;
+                
+                // Enable export buttons
+                document.getElementById('export-btn').disabled = false;
+                document.getElementById('export-json-btn').disabled = false;
+                
+                // Move to next landmark
+                const landmarkItems = Array.from(document.querySelectorAll('.landmark-item'));
+                const currentIndex = landmarkItems.findIndex(i => i.dataset.landmark === currentSelectionMode);
+                if (currentIndex < landmarkItems.length - 1) {
+                    const nextLandmark = landmarkItems[currentIndex + 1].dataset.landmark;
+                    selectLandmark(nextLandmark);
+                    landmarkItems[currentIndex + 1].scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                }
+            }
+        }
+        
+        function onWindowResize() {
+            const mainContainer = document.getElementById('main-canvas');
+            const mainWidth = mainContainer.clientWidth;
+            const mainHeight = mainContainer.clientHeight;
+            
+            mainCamera.aspect = mainWidth / mainHeight;
+            mainCamera.updateProjectionMatrix();
+            mainRenderer.setSize(mainWidth, mainHeight);
+            
+            const refContainer = document.getElementById('reference-canvas');
+            const refWidth = refContainer.clientWidth;
+            const refHeight = refContainer.clientHeight;
+            
+            refCamera.aspect = refWidth / refHeight;
+            refCamera.updateProjectionMatrix();
+            refRenderer.setSize(refWidth, refHeight);
+        }
+        
+        function animate() {
+            requestAnimationFrame(animate);
+            
+            if (referenceMesh) {
+                referenceMesh.rotation.y += 0.003;
+            }
+            
+            mainRenderer.render(mainScene, mainCamera);
+            refRenderer.render(refScene, refCamera);
+        }
+        
+        // File loading
+        document.getElementById('file-input').addEventListener('change', async (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            
+            const text = await file.text();
+            loadOBJ(text);
+            
+            document.querySelector('#info div').innerHTML = `
+                <strong>Status:</strong> <span style="color: #4ade80;">Mesh loaded ✓</span><br>
+                <strong>File:</strong> ${file.name}
+            `;
+        });
+        
+        function loadOBJ(objText) {
+            const lines = objText.split('\n');
+            const positions = [];
+            const indices = [];
+            
+            lines.forEach(line => {
+                const parts = line.trim().split(/\s+/);
+                
+                if (parts[0] === 'v') {
+                    positions.push(
+                        parseFloat(parts[1]),
+                        parseFloat(parts[2]),
+                        parseFloat(parts[3])
+                    );
+                } else if (parts[0] === 'f') {
+                    // Handle faces (assuming triangles)
+                    for (let i = 1; i <= 3; i++) {
+                        const vertexIndex = parseInt(parts[i].split('/')[0]) - 1;
+                        indices.push(vertexIndex);
+                    }
+                }
+            });
+            
+            vertices = new Float32Array(positions);
+            
+            const geometry = new THREE.BufferGeometry();
+            geometry.setAttribute('position', new THREE.BufferAttribute(vertices, 3));
+            geometry.setIndex(indices);
+            geometry.computeVertexNormals();
+            
+            const material = new THREE.MeshPhongMaterial({
+                color: 0x9f7aea,
+                flatShading: false,
+                side: THREE.DoubleSide
+            });
+            
+            if (userMesh) mainScene.remove(userMesh);
+            userMesh = new THREE.Mesh(geometry, material);
+            mainScene.add(userMesh);
+            
+            // Center and scale mesh properly
+            geometry.computeBoundingBox();
+            const center = new THREE.Vector3();
+            geometry.boundingBox.getCenter(center);
+            
+            // Shift geometry so bottom is at y=0
+            const yMin = geometry.boundingBox.min.y;
+            geometry.translate(0, -yMin, 0);
+            
+            // Recalculate center after translation
+            geometry.computeBoundingBox();
+            geometry.boundingBox.getCenter(center);
+            
+            // Scale to fit
+            const size = new THREE.Vector3();
+            geometry.boundingBox.getSize(size);
+            const maxDim = Math.max(size.x, size.y, size.z);
+            const scale = 1.8 / maxDim;
+            userMesh.scale.set(scale, scale, scale);
+            
+            // Position mesh at origin
+            userMesh.position.set(0, 0, 0);
+            
+            // Reset camera
+            mainCamera.position.set(0, 1, 3);
+            mainCamera.lookAt(0, 1, 0);
+            
+            // Auto-select first landmark
+            selectLandmark('Acr_L');
+        }
+        
+        // Export functions
+        document.getElementById('export-btn').addEventListener('click', () => {
+            const code = `# Anthropometric landmark indices
+landmarks = {
+${Object.entries(selectedLandmarks).map(([name, idx]) => 
+    `    "${name}": ${idx},  # ${getLandmarkDescription(name)}`
+).join('\n')}
+}
+
+# Compute left-right Euclidean distances between symmetric landmarks
+distances = {}
+for name in ["Acr", "Rad", "Styl", "Troc", "Iliocr", "Tib"]:
+    if f"{name}_L" in landmarks and f"{name}_R" in landmarks:
+        left = vertices[landmarks[f"{name}_L"]]
+        right = vertices[landmarks[f"{name}_R"]]
+        dist = np.linalg.norm(left - right)
+        distances[name] = round(dist * 1000, 2)  # convert to mm
+
+# Compute mean
+if distances:
+    distances["Mean"] = round(np.mean(list(distances.values())), 2)
+
+# Display results
+print("\\n[RESULTS] Anthropometric Landmark Distances (mm):")
+print(f"{'Method':<20}{'Acr.':>8}{'Rad.':>8}{'Styl.':>8}{'Troc.':>8}{'Iliocr.':>10}{'Tib.':>8}{'Mean':>8}")
+print("-" * 70)
+print(f"{'Your Mesh':<20}"
+      f"{distances.get('Acr', 0):>8.2f}{distances.get('Rad', 0):>8.2f}{distances.get('Styl', 0):>8.2f}"
+      f"{distances.get('Troc', 0):>8.2f}{distances.get('Iliocr', 0):>10.2f}{distances.get('Tib', 0):>8.2f}{distances.get('Mean', 0):>8.2f}")
+
+# Save results
+with open("landmark_distances.json", "w") as f:
+    json.dump(distances, f, indent=4)
+`;
+            
+            downloadFile('landmark_indices.py', code);
+        });
+        
+        document.getElementById('export-json-btn').addEventListener('click', () => {
+            const data = {
+                landmarks: selectedLandmarks,
+                descriptions: {}
+            };
+            
+            Object.keys(selectedLandmarks).forEach(name => {
+                data.descriptions[name] = getLandmarkDescription(name);
+            });
+            
+            downloadFile('landmarks.json', JSON.stringify(data, null, 2));
+        });
+        
+        function getLandmarkDescription(name) {
+            const descriptions = {
+                'Acr_L': 'Left Acromiale (shoulder tip)',
+                'Acr_R': 'Right Acromiale',
+                'Rad_L': 'Left Radiale (elbow)',
+                'Rad_R': 'Right Radiale',
+                'Styl_L': 'Left Stylion (wrist)',
+                'Styl_R': 'Right Stylion',
+                'Troc_L': 'Left Trochanterion (hip)',
+                'Troc_R': 'Right Trochanterion',
+                'Iliocr_L': 'Left Iliocristale (hip crest)',
+                'Iliocr_R': 'Right Iliocristale',
+                'Tib_L': 'Left Tibiale (knee)',
+                'Tib_R': 'Right Tibiale'
+            };
+            return descriptions[name] || '';
+        }
+        
+        function downloadFile(filename, content) {
+            const blob = new Blob([content], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+        
+        init();
+    </script>
+</body>
+</html>

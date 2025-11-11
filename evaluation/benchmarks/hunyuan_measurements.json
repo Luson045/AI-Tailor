@@ -1,0 +1,57 @@
+{
+  "mesh_info": {
+    "path": "results/benchmarks/hunyuan_image9.obj",
+    "vertices": 10002,
+    "faces": 20000,
+    "is_smpl_topology": false
+  },
+  "geometric_measurements_mm": {
+    "height": 1961.35,
+    "width": 1939.12,
+    "depth": 1470.56,
+    "shoulder_width_approx": 1261.17,
+    "hip_width_approx": 1067.06
+  },
+  "landmark_measurements_mm": {
+    "shoulder_breadth": 1268.92,
+    "hip_breadth": 1120.59,
+    "total_height": 2045.0
+  },
+  "landmarks": {
+    "head_top": [
+      -0.12559165,
+      0.9608452,
+      -0.04461134
+    ],
+    "feet_bottom": [
+      0.0230945,
+      -1.00050954,
+      0.51485249
+    ],
+    "shoulder_left": [
+      -0.30355262,
+      0.80658954,
+      -0.00395282
+    ],
+    "shoulder_right": [
+      0.95761568,
+      0.68572669,
+      -0.07470546
+    ],
+    "hip_left": [
+      -0.98150788,
+      -0.03564879,
+      -0.4471669
+    ],
+    "hip_right": [
+      0.08554939,
+      -0.11710764,
+      -0.11479305
+    ]
+  },
+  "warnings": [
+    "Measurements are APPROXIMATE for non-SMPL meshes",
+    "Landmark detection uses crude extremal point heuristics",
+    "For accurate measurements, fit SMPL/SMPL-X model first"
+  ]
+}

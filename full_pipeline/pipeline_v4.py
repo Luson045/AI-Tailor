@@ -13,9 +13,9 @@ from mpl_toolkits.mplot3d import Axes3D
 # ========== CONFIG ==========
 # Use front + left + right views for best results
 IMAGES = {
-    'front': "dataset/image10.jpg",
-    'left': "dataset/image10_right.jpg",   # Left side view (person's left visible)
-    'right': "dataset/image10_left.jpg", # Right side view (person's right visible)
+    'front': "dataset/image13.jpg",
+    'left': "dataset/image13_right.jpg",   # Left side view (person's left visible)
+    'right': "dataset/image13_left.jpg", # Right side view (person's right visible)
 }
 MODEL_PATH = "full_pipeline/models/"
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")

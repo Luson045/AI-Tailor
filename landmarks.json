@@ -1,0 +1,30 @@
+{
+  "landmarks": {
+    "Acr_L": 3875,
+    "Acr_R": 7215,
+    "Rad_L": 4334,
+    "Rad_R": 7078,
+    "Styl_L": 4858,
+    "Styl_R": 7594,
+    "Troc_L": 3448,
+    "Troc_R": 6208,
+    "Iliocr_L": 5512,
+    "Iliocr_R": 8237,
+    "Tib_L": 3673,
+    "Tib_R": 6437
+  },
+  "descriptions": {
+    "Acr_L": "Left Acromiale (shoulder tip)",
+    "Acr_R": "Right Acromiale",
+    "Rad_L": "Left Radiale (elbow)",
+    "Rad_R": "Right Radiale",
+    "Styl_L": "Left Stylion (wrist)",
+    "Styl_R": "Right Stylion",
+    "Troc_L": "Left Trochanterion (hip)",
+    "Troc_R": "Right Trochanterion",
+    "Iliocr_L": "Left Iliocristale (hip crest)",
+    "Iliocr_R": "Right Iliocristale",
+    "Tib_L": "Left Tibiale (knee)",
+    "Tib_R": "Right Tibiale"
+  }
+}
