@@ -1,0 +1,1003 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Tailor: Virtual Body Measurement</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        :root {
+            --primary-orange: #FF6B35;
+            --secondary-orange: #FF8C42;
+            --accent-yellow: #FFD23F;
+            --bright-cyan: #00D9FF;
+            --bright-green: #00E5A0;
+            --white: #FFFFFF;
+            --light-bg: #F8FAFB;
+            --text-dark: #2D3436;
+            --text-medium: #636E72;
+            --text-light: #95A5A6;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+            line-height: 1.6;
+            color: var(--text-dark);
+            overflow-x: hidden;
+            background: var(--white);
+        }
+        
+        /* Navbar */
+        nav {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            background: var(--white);
+            padding: 1.2rem 2rem;
+            z-index: 1000;
+            box-shadow: 0 2px 20px rgba(0,0,0,0.06);
+            transition: all 0.3s ease;
+        }
+        
+        nav.scrolled {
+            padding: 0.8rem 2rem;
+            box-shadow: 0 2px 30px rgba(0,0,0,0.1);
+        }
+        
+        .nav-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            font-size: 1.6rem;
+            font-weight: 800;
+            color: var(--primary-orange);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .logo span {
+            font-size: 2rem;
+        }
+        
+        .nav-links {
+            display: flex;
+            gap: 2.5rem;
+            list-style: none;
+            align-items: center;
+        }
+        
+        .nav-links a {
+            color: var(--text-dark);
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s;
+            position: relative;
+        }
+        
+        .nav-links a:hover {
+            color: var(--primary-orange);
+        }
+        
+        .nav-links a::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: var(--primary-orange);
+            transition: width 0.3s;
+        }
+        
+        .nav-links a:hover::after {
+            width: 100%;
+        }
+        
+        .nav-links .cta-button {
+            background: linear-gradient(135deg, var(--primary-orange), var(--secondary-orange));
+            color: var(--white);
+            padding: 0.7rem 1.8rem;
+            border-radius: 50px;
+            font-weight: 600;
+        }
+        
+        .nav-links .cta-button::after {
+            display: none;
+        }
+        
+        .nav-links .cta-button:hover {
+            color: var(--white);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(255, 107, 53, 0.4);
+        }
+        
+        .mobile-menu {
+            display: none;
+            flex-direction: column;
+            gap: 5px;
+            cursor: pointer;
+        }
+        
+        .mobile-menu span {
+            width: 25px;
+            height: 3px;
+            background: var(--primary-orange);
+            border-radius: 2px;
+            transition: all 0.3s;
+        }
+        
+        /* Hero Section */
+        .hero {
+            margin-top: 80px;
+            min-height: 90vh;
+            background: linear-gradient(135deg, #FFF5F0 0%, #FFFFFF 50%, #F0F9FF 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+            padding: 2rem;
+        }
+        
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -10%;
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, rgba(255, 107, 53, 0.1) 0%, transparent 70%);
+            border-radius: 50%;
+        }
+        
+        .hero::after {
+            content: '';
+            position: absolute;
+            bottom: -30%;
+            left: -10%;
+            width: 500px;
+            height: 500px;
+            background: radial-gradient(circle, rgba(0, 217, 255, 0.08) 0%, transparent 70%);
+            border-radius: 50%;
+        }
+        
+        .hero-content {
+            max-width: 1400px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 4rem;
+            align-items: center;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .hero-text h1 {
+            font-size: 4rem;
+            margin-bottom: 1.5rem;
+            color: var(--text-dark);
+            line-height: 1.2;
+            font-weight: 800;
+        }
+        
+        .hero-text h1 .highlight {
+            background: linear-gradient(135deg, var(--primary-orange), var(--secondary-orange));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .hero-text p {
+            font-size: 1.3rem;
+            margin-bottom: 2.5rem;
+            color: var(--text-medium);
+            line-height: 1.8;
+        }
+        
+        .hero-buttons {
+            display: flex;
+            gap: 1.5rem;
+            flex-wrap: wrap;
+        }
+        
+        .button {
+            padding: 1rem 2.5rem;
+            border: none;
+            border-radius: 50px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-block;
+        }
+        
+        .button-primary {
+            background: linear-gradient(135deg, var(--primary-orange), var(--secondary-orange));
+            color: var(--white);
+        }
+        
+        .button-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 40px rgba(255, 107, 53, 0.4);
+        }
+        
+        .button-secondary {
+            background: var(--white);
+            color: var(--primary-orange);
+            border: 2px solid var(--primary-orange);
+        }
+        
+        .button-secondary:hover {
+            background: var(--primary-orange);
+            color: var(--white);
+        }
+        
+        .hero-visual {
+            background: var(--white);
+            border-radius: 30px;
+            padding: 3rem;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.08);
+            height: 500px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-light);
+            font-size: 1.3rem;
+            border: 3px dashed var(--primary-orange);
+        }
+        
+        /* Section Styling */
+        section {
+            padding: 6rem 2rem;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        .section-header {
+            text-align: center;
+            margin-bottom: 4rem;
+        }
+        
+        .section-header h2 {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            color: var(--text-dark);
+            font-weight: 800;
+        }
+        
+        .section-header h2 .highlight {
+            background: linear-gradient(135deg, var(--primary-orange), var(--secondary-orange));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .section-header p {
+            font-size: 1.2rem;
+            color: var(--text-medium);
+        }
+        
+        /* About Section */
+        #about {
+            background: var(--white);
+        }
+        
+        .about-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 4rem;
+            align-items: center;
+        }
+        
+        .about-text h3 {
+            font-size: 2rem;
+            margin-bottom: 1.5rem;
+            color: var(--primary-orange);
+            font-weight: 700;
+        }
+        
+        .about-text p {
+            margin-bottom: 1.5rem;
+            color: var(--text-medium);
+            font-size: 1.1rem;
+            line-height: 1.8;
+        }
+        
+        .image-placeholder {
+            background: linear-gradient(135deg, #FFF5F0, #F0F9FF);
+            border-radius: 30px;
+            height: 450px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 3px dashed var(--primary-orange);
+            color: var(--text-light);
+            font-size: 1.2rem;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.05);
+        }
+        
+        /* Features Section */
+        #features {
+            background: var(--light-bg);
+        }
+        
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 2.5rem;
+        }
+        
+        .feature-card {
+            background: var(--white);
+            padding: 2.5rem;
+            border-radius: 25px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.06);
+            transition: all 0.4s ease;
+            border-top: 5px solid var(--primary-orange);
+        }
+        
+        .feature-card:hover {
+            transform: translateY(-15px);
+            box-shadow: 0 20px 60px rgba(255, 107, 53, 0.15);
+        }
+        
+        .feature-icon {
+            font-size: 3.5rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .feature-card h3 {
+            font-size: 1.6rem;
+            margin-bottom: 1rem;
+            color: var(--text-dark);
+            font-weight: 700;
+        }
+        
+        .feature-card p {
+            color: var(--text-medium);
+            line-height: 1.7;
+        }
+        
+        /* Technology Section */
+        #technology {
+            background: var(--white);
+        }
+        
+        .tech-stack {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 2rem;
+        }
+        
+        .tech-item {
+            background: linear-gradient(135deg, #FFF5F0, #FFFFFF);
+            padding: 2rem;
+            border-radius: 20px;
+            box-shadow: 0 5px 25px rgba(0,0,0,0.05);
+            text-align: center;
+            transition: all 0.3s;
+            border: 2px solid transparent;
+        }
+        
+        .tech-item:hover {
+            border-color: var(--primary-orange);
+            transform: scale(1.05);
+        }
+        
+        .tech-item h4 {
+            color: var(--primary-orange);
+            margin-bottom: 0.8rem;
+            font-size: 1.3rem;
+            font-weight: 700;
+        }
+        
+        .tech-item p {
+            color: var(--text-medium);
+            font-size: 0.95rem;
+            line-height: 1.6;
+        }
+        
+        /* How It Works */
+        #how-it-works {
+            background: var(--light-bg);
+        }
+        
+        .steps {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 3rem;
+            margin-top: 3rem;
+        }
+        
+        .step {
+            text-align: center;
+            position: relative;
+        }
+        
+        .step-number {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, var(--primary-orange), var(--secondary-orange));
+            color: var(--white);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            font-weight: 800;
+            margin: 0 auto 1.5rem;
+            box-shadow: 0 10px 30px rgba(255, 107, 53, 0.3);
+        }
+        
+        .step h3 {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            color: var(--text-dark);
+            font-weight: 700;
+        }
+        
+        .step p {
+            color: var(--text-medium);
+            line-height: 1.7;
+        }
+        
+        /* Visualizations Section */
+        #visualizations {
+            background: var(--white);
+        }
+        
+        .viz-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+            gap: 3rem;
+        }
+        
+        .viz-card {
+            background: var(--white);
+            border-radius: 25px;
+            overflow: hidden;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.08);
+            transition: all 0.4s;
+            border: 2px solid var(--light-bg);
+        }
+        
+        .viz-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 60px rgba(255, 107, 53, 0.2);
+            border-color: var(--primary-orange);
+        }
+        
+        .viz-card-image {
+            height: 250px;
+            background: linear-gradient(135deg, #FFF5F0, #F0F9FF);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-light);
+            font-size: 1.1rem;
+        }
+        
+        .viz-card-content {
+            padding: 2rem;
+        }
+        
+        .viz-card h3 {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            color: var(--text-dark);
+            font-weight: 700;
+        }
+        
+        .viz-card p {
+            color: var(--text-medium);
+            margin-bottom: 1.5rem;
+            line-height: 1.7;
+        }
+        
+        .viz-button {
+            background: linear-gradient(135deg, var(--primary-orange), var(--secondary-orange));
+            color: var(--white);
+            padding: 0.9rem 2rem;
+            border-radius: 50px;
+            text-decoration: none;
+            display: inline-block;
+            transition: all 0.3s;
+            font-weight: 600;
+        }
+        
+        .viz-button:hover {
+            transform: translateX(10px);
+            box-shadow: 0 8px 25px rgba(255, 107, 53, 0.4);
+        }
+        
+        /* Results Section */
+        #results {
+            background: var(--light-bg);
+        }
+        
+        .results-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 4rem;
+            align-items: center;
+        }
+        
+        .results-stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+        }
+        
+        .stat-card {
+            background: linear-gradient(135deg, var(--primary-orange), var(--secondary-orange));
+            color: var(--white);
+            padding: 2.5rem;
+            border-radius: 20px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(255, 107, 53, 0.3);
+            transition: all 0.3s;
+        }
+        
+        .stat-card:hover {
+            transform: scale(1.05);
+        }
+        
+        .stat-number {
+            font-size: 3rem;
+            font-weight: 800;
+            margin-bottom: 0.5rem;
+        }
+        
+        .stat-label {
+            opacity: 0.95;
+            font-size: 1.1rem;
+        }
+        
+        /* GitHub Section */
+        #github {
+            background: var(--white);
+            text-align: center;
+        }
+        
+        .github-card {
+            background: linear-gradient(135deg, #FFF5F0, #F0F9FF);
+            padding: 4rem;
+            border-radius: 30px;
+            max-width: 700px;
+            margin: 0 auto;
+            box-shadow: 0 15px 50px rgba(0,0,0,0.08);
+        }
+        
+        .github-card p {
+            font-size: 1.2rem;
+            color: var(--text-medium);
+            line-height: 1.8;
+            margin-bottom: 2rem;
+        }
+        
+        .github-button {
+            background: var(--text-dark);
+            color: var(--white);
+            padding: 1.2rem 3rem;
+            border-radius: 50px;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 1rem;
+            font-weight: 700;
+            font-size: 1.1rem;
+            transition: all 0.3s;
+        }
+        
+        .github-button:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(45, 52, 54, 0.3);
+        }
+        
+        /* Footer */
+        footer {
+            background: var(--text-dark);
+            color: var(--white);
+            text-align: center;
+            padding: 3rem 2rem;
+        }
+        
+        footer p {
+            opacity: 0.9;
+        }
+        
+        footer p:last-child {
+            margin-top: 0.8rem;
+            opacity: 0.6;
+            font-size: 0.95rem;
+        }
+        
+        /* Responsive Design */
+        @media (max-width: 1024px) {
+            .hero-content,
+            .about-content,
+            .results-grid {
+                grid-template-columns: 1fr;
+                gap: 3rem;
+            }
+            
+            .hero-visual {
+                height: 350px;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .nav-links {
+                position: fixed;
+                top: 80px;
+                left: -100%;
+                width: 100%;
+                height: calc(100vh - 80px);
+                background: var(--white);
+                flex-direction: column;
+                justify-content: flex-start;
+                padding: 3rem 2rem;
+                gap: 2rem;
+                transition: left 0.3s;
+                box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+            }
+            
+            .nav-links.active {
+                left: 0;
+            }
+            
+            .mobile-menu {
+                display: flex;
+            }
+            
+            .hero-text h1 {
+                font-size: 2.5rem;
+            }
+            
+            .hero-text p {
+                font-size: 1.1rem;
+            }
+            
+            .section-header h2 {
+                font-size: 2rem;
+            }
+            
+            .hero-buttons {
+                flex-direction: column;
+            }
+            
+            .button {
+                width: 100%;
+                text-align: center;
+            }
+            
+            section {
+                padding: 4rem 1.5rem;
+            }
+            
+            .results-stats {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .hero-text h1 {
+                font-size: 2rem;
+            }
+            
+            .features-grid,
+            .tech-stack,
+            .viz-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .steps {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav id="navbar">
+        <div class="nav-container">
+            <div class="logo">
+                <img src="images/logo.png" alt="AI Tailor Logo" style="height:60px; vertical-align:middle; margin-right:10px;">
+                AI Tailor
+            </div>
+            <div class="mobile-menu" onclick="toggleMenu()">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+            <ul class="nav-links" id="navLinks">
+                <li><a href="#about">About</a></li>
+                <li><a href="#features">Features</a></li>
+                <li><a href="#technology">Technology</a></li>
+                <li><a href="#how-it-works">How It Works</a></li>
+                <li><a href="#visualizations" class="cta-button">Visualizations</a></li>
+                <li><a href="#github">GitHub</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-content">
+            <div class="hero-text">
+                <h1>
+                    <span class="highlight">AI-Powered</span><br>
+                    Virtual Body Measurement
+                </h1>
+                <p>Transform single images into precise 3D body measurements using our model. Perfect for fashion, healthcare, and ergonomics.</p>
+                <div class="hero-buttons">
+                    <a href="https://github.com/Luson045/AI-Tailor" target="_blank" class="button button-primary">View</a>
+                    <a href="#how-it-works" class="button button-secondary">Learn More</a>
+                </div>
+            </div>
+            <div class="hero-visual">
+                <img src="images/comparision.png" alt="3D Body Mesh" style="width:100%; height:100%; object-fit:contain;">
+            </div>
+        </div>
+    </section>
+
+    <!-- About Section -->
+    <section id="about">
+        <div class="section-header">
+            <h2>About <span class="highlight">AI Tailor</span></h2>
+            <p>Revolutionizing body measurements with AI and 3D technology</p>
+        </div>
+        <div class="about-content">
+            <div class="about-text">
+                <h3>What is AI Tailor?</h3>
+                <p>AI Tailor is an innovative system that generates accurate 3D body meshes from single photographs and extracts precise anthropometric measurements.</p>
+                <p>Our technology combines state-of-the-art AI models with validated anthropometry standards to deliver professional-grade measurements that rival traditional tailoring methods.</p>
+                <p>Whether you're in fashion design, healthcare, or ergonomics research, AI Tailor provides the accuracy and convenience you need.</p>
+            </div>
+            <div class="image-placeholder">
+                <img src="images/workflow.png" alt="System Overview" style="width:100%; height:100%; object-fit:contain;">
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section id="features">
+        <div class="section-header">
+            <h2>Key <span class="highlight">Features</span> and <span class="highlight">Vision</span></h2>
+            <p>What makes it stand out and what we aim to achieve</p>
+        </div>
+        <div class="features-grid">
+            <div class="feature-card">
+                <div class="feature-icon">🎨</div>
+                <h3>AI-Powered Generation</h3>
+                <p>Advanced SMPL-X models along with optimization techniques and various algorithms along the pipeline create high-fidelity 3D meshes from single images.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">📏</div>
+                <h3>Precise Measurements</h3>
+                <p>SOTA anthropometric measurements including shoulder breadth, hip width, and other body dimensions.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">⚡</div>
+                <h3>Lightning Fast</h3>
+                <p>Complete 3D reconstruction and measurement analysis in under a minute per image.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">🎯</div>
+                <h3>Interactive Tools</h3>
+                <p>Resource Friendly technologies, User-friendly web interfaces for landmark selection, mesh inspection, and data visualization.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">🔬</div>
+                <h3>Research-Grade</h3>
+                <p>Validated against SMPL-Anthropometry standards with ±5mm measurement accuracy.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">🌐</div>
+                <h3>Open Source</h3>
+                <p>Fully transparent implementation with comprehensive documentation and reproducible results.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Technology Section -->
+    <section id="technology">
+        <div class="section-header">
+            <h2>Technology <span class="highlight">Stack</span></h2>
+            <p>Built with cutting-edge tools and frameworks</p>
+        </div>
+        <div class="tech-stack">
+            <div class="tech-item">
+                <h4>🤖 Mediapipe(BlazePose) </h4>
+                <p>State-of-the-art 3D world coordinate body keypoint detection for creating point cloud</p>
+            </div>
+            <div class="tech-item">
+                <h4>📐 SMPL/SMPL-X</h4>
+                <p>Parametric body models for anatomical accuracy</p>
+            </div>
+            <div class="tech-item">
+                <h4>🎨 Three.js [Future Use]</h4>
+                <p>WebGL 3D graphics for interactive visualization</p>
+            </div>
+            <div class="tech-item">
+                <h4>🐍 Python</h4>
+                <p>NumPy, Trimesh, PyTorch for computation</p>
+            </div>
+            <div class="tech-item">
+                <h4>📊 SMPL-Anthropometry</h4>
+                <p>Validated measurement library for accuracy</p>
+            </div>
+            <div class="tech-item">
+                <h4>🌐 Modern Web</h4>
+                <p>Responsive HTML5, CSS3, JavaScript interfaces</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- How It Works Section -->
+    <section id="how-it-works">
+        <div class="section-header">
+            <h2>How It <span class="highlight">Works</span></h2>
+            <p>Four simple steps from image to measurements</p>
+        </div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <h3>Upload Image</h3>
+                <p>Provide a single photograph of a person in standard pose</p>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <h3>3D Generation</h3>
+                <p>AI creates a detailed 3D mesh reconstruction</p>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <h3>Landmark Detection</h3>
+                <p>Identify anatomical points automatically or manually</p>
+            </div>
+            <div class="step">
+                <div class="step-number">4</div>
+                <h3>Get Measurements</h3>
+                <p>Extract precise anthropometric data instantly</p>
+            </div>
+        </div>
+        <!-- <div class="image-placeholder" style="margin-top: 4rem; height: 350px;">
+            [Processing Pipeline Diagram]
+        </div> -->
+    </section>
+
+    <!-- Visualizations Section -->
+    <section id="visualizations">
+        <div class="section-header">
+            <h2>Interactive <span class="highlight">Tools</span></h2>
+            <p>Explore our visualization and analysis platforms</p>
+        </div>
+        <div class="viz-grid">
+            <div class="viz-card">
+                <div class="viz-card-image">
+                    <img src="images/point_cloud.png" alt="Landmark Picker Screenshot" style="width:100%; height:100%; object-fit:contain;">
+                </div>
+                <div class="viz-card-content">
+                    <h3>🎯 Landmark Picker</h3>
+                    <p>Automatically select anatomical landmarks on 3D meshes with reference guide visualization.</p>
+                    <!-- <a href="visualizations/landmark_picker.html" class="viz-button">Open Tool →</a> -->
+                </div>
+            </div>
+            <div class="viz-card">
+                <div class="viz-card-image">
+                    <img src="images/mesh_viewer.png" alt="Mesh Viewer Screenshot" style="width:100%; height:100%; object-fit:contain;">
+                </div>
+                <div class="viz-card-content">
+                    <h3>👁️ Mesh Viewer</h3>
+                    <p>Explore 3D meshes with advanced controls, measurements, and overlay features.</p>
+                    <!-- <a href="visualizations/mesh_viewer.html" class="viz-button">Open Tool →</a> -->
+                </div>
+            </div>
+            <div class="viz-card">
+                <div class="viz-card-image">
+                    <img src="images/future.png" alt="Dashboard Screenshot" style="width:100%; height:100%; object-fit:contain;">
+                </div>
+                <div class="viz-card-content">
+                    <h3>📊 Dashboard</h3>
+                    <p>Compare body measurements, visualize shape metrics, and analyze fit data with real-time plots.</p>
+                    <!-- <a href="visualizations/dashboard.html" class="viz-button">Open Tool →</a> -->
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Results Section -->
+    <section id="results">
+        <div class="section-header">
+            <h2>Validation <span class="highlight">Results</span></h2>
+            <p>Accuracy and performance benchmarks</p>
+        </div>
+        <div class="results-grid">
+            <div class="image-placeholder">
+                <img src="images/result_comparision.png" alt="Results Visualization" style="width:100%; height:100%; object-fit:contain;">
+            </div>
+            <div class="results-stats">
+                <div class="stat-card">
+                    <div class="stat-number">±50mm</div>
+                    <div class="stat-label">Measurement Accuracy</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">60s</div>
+                    <div class="stat-label">Average Processing Time</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">~70%</div>
+                    <div class="stat-label">Reconstruction Consistency</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">20+</div>
+                    <div class="stat-label">Tested Sample Images</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- GitHub Section -->
+    <section id="github">
+        <div class="section-header">
+            <h2>Open Source on <span class="highlight">GitHub</span></h2>
+            <p>Access the full project code, documentation, and demos</p>
+        </div>
+        <div class="github-card">
+            <p>AI Tailor is fully open source and available for developers, researchers, and enthusiasts to explore, contribute, and build upon.</p>
+            <a href="https://github.com/Luson045/AI-Tailor" target="_blank" class="github-button">
+                <span>🌟</span> View on GitHub
+            </a>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <p>© 2025 AI Tailor. All rights reserved.</p>
+    </footer>
+
+    <!-- JavaScript -->
+    <script>
+        // Navbar scroll effect
+        window.addEventListener('scroll', function() {
+            const navbar = document.getElementById('navbar');
+            if (window.scrollY > 50) {
+                navbar.classList.add('scrolled');
+            } else {
+                navbar.classList.remove('scrolled');
+            }
+        });
+
+        // Mobile menu toggle
+        function toggleMenu() {
+            const navLinks = document.getElementById('navLinks');
+            navLinks.classList.toggle('active');
+        }
+
+        // Smooth scroll behavior
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function(e) {
+                e.preventDefault();
+                document.querySelector(this.getAttribute('href')).scrollIntoView({
+                    behavior: 'smooth'
+                });
+
+                // Close mobile menu after clicking
+                document.getElementById('navLinks').classList.remove('active');
+            });
+        });
+    </script>
+</body>
+</html>
