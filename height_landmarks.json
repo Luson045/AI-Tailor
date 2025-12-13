@@ -1,0 +1,22 @@
+{
+  "landmarks": {
+    "Foot-Knee_L": 8626,
+    "Foot-Knee_R": 6399,
+    "Knee-Waist_L": 6399,
+    "Knee-Waist_R": 7149,
+    "Waist-Neck_L": 7149,
+    "Waise-Neck_R": 6104,
+    "Neck-Head_L": 6104,
+    "Neck-Head_R": 8969
+  },
+  "descriptions": {
+    "Foot-Knee_L": "Left Acromiale (shoulder tip)",
+    "Foot-Knee_R": "Right Acromiale",
+    "Knee-Waist_L": "Left Radiale (elbow)",
+    "Knee-Waist_R": "Right Radiale",
+    "Waist-Neck_L": "Left Stylion (wrist)",
+    "Waise-Neck_R": "Right Stylion",
+    "Neck-Head_L": "Left Trochanterion (hip)",
+    "Neck-Head_R": "Right Trochanterion"
+  }
+}

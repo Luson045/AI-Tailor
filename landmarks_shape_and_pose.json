@@ -1,0 +1,14 @@
+{
+  "landmarks": {
+    "Chest_L": 4490,
+    "Chest_R": 7250,
+    "Belly_L": 3263,
+    "Belly_R": 6070,
+    "Hip_L": 3447, 
+    "Hip_R": 6203, 
+    "BellySide_L": 5940, //FRONT SIDE
+    "BellySide_R": 5941, //BACK SIDE
+    "LegSide_L": 7156, //FRONT SIDE
+    "LegSide_R": 6231,  //BACK SIDE
+  }
+}

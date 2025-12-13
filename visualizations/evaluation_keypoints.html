@@ -338,58 +338,58 @@
             <div class="section">
                 <div class="section-title">📍 Landmarks (Click landmark to see reference)</div>
                 <div id="landmarks">
-                    <div class="landmark-item" data-landmark="Acr_L">
+                    <div class="landmark-item" data-landmark="Foot-Knee_L">
                         <div>
-                            <div class="landmark-name">Acr_L</div>
+                            <div class="landmark-name">Foot-Knee_L</div>
                             <div class="landmark-desc">Left Acromiale (shoulder tip)</div>
                         </div>
                         <div class="landmark-value empty">-</div>
                     </div>
-                    <div class="landmark-item" data-landmark="Acr_R">
+                    <div class="landmark-item" data-landmark="Foot-Knee_R">
                         <div>
-                            <div class="landmark-name">Acr_R</div>
+                            <div class="landmark-name">Foot-Knee_R</div>
                             <div class="landmark-desc">Right Acromiale</div>
                         </div>
                         <div class="landmark-value empty">-</div>
                     </div>
-                    <div class="landmark-item" data-landmark="Rad_L">
+                    <div class="landmark-item" data-landmark="Knee-Waist_L">
                         <div>
-                            <div class="landmark-name">Rad_L</div>
+                            <div class="landmark-name">Knee-Waist_L</div>
                             <div class="landmark-desc">Left Radiale (elbow)</div>
                         </div>
                         <div class="landmark-value empty">-</div>
                     </div>
-                    <div class="landmark-item" data-landmark="Rad_R">
+                    <div class="landmark-item" data-landmark="Knee-Waist_R">
                         <div>
-                            <div class="landmark-name">Rad_R</div>
+                            <div class="landmark-name">Knee-Waist_R</div>
                             <div class="landmark-desc">Right Radiale</div>
                         </div>
                         <div class="landmark-value empty">-</div>
                     </div>
-                    <div class="landmark-item" data-landmark="Styl_L">
+                    <div class="landmark-item" data-landmark="Waist-Neck_L">
                         <div>
-                            <div class="landmark-name">Styl_L</div>
+                            <div class="landmark-name">Waist-Neck_L</div>
                             <div class="landmark-desc">Left Stylion (wrist)</div>
                         </div>
                         <div class="landmark-value empty">-</div>
                     </div>
-                    <div class="landmark-item" data-landmark="Styl_R">
+                    <div class="landmark-item" data-landmark="Waise-Neck_R">
                         <div>
-                            <div class="landmark-name">Styl_R</div>
+                            <div class="landmark-name">Waise-Neck_R</div>
                             <div class="landmark-desc">Right Stylion</div>
                         </div>
                         <div class="landmark-value empty">-</div>
                     </div>
-                    <div class="landmark-item" data-landmark="Troc_L">
+                    <div class="landmark-item" data-landmark="Neck-Head_L">
                         <div>
-                            <div class="landmark-name">Troc_L</div>
+                            <div class="landmark-name">Neck-Head_L</div>
                             <div class="landmark-desc">Left Trochanterion (hip)</div>
                         </div>
                         <div class="landmark-value empty">-</div>
                     </div>
-                    <div class="landmark-item" data-landmark="Troc_R">
+                    <div class="landmark-item" data-landmark="Neck-Head_R">
                         <div>
-                            <div class="landmark-name">Troc_R</div>
+                            <div class="landmark-name">Neck-Head_R</div>
                             <div class="landmark-desc">Right Trochanterion</div>
                         </div>
                         <div class="landmark-value empty">-</div>
@@ -444,14 +444,14 @@
 
         // Landmark positions on reference body (approximate anatomical positions)
         const referenceLandmarkPositions = {
-            'Acr_L': { x: -0.35, y: 1.35, z: 0.1 },    // Left shoulder
-            'Acr_R': { x: 0.35, y: 1.35, z: 0.1 },     // Right shoulder
-            'Rad_L': { x: -0.4, y: 0.95, z: 0.05 },    // Left elbow
-            'Rad_R': { x: 0.4, y: 0.95, z: 0.05 },     // Right elbow
-            'Styl_L': { x: -0.42, y: 0.6, z: 0.05 },   // Left wrist
-            'Styl_R': { x: 0.42, y: 0.6, z: 0.05 },    // Right wrist
-            'Troc_L': { x: -0.15, y: 0.85, z: 0 },     // Left hip
-            'Troc_R': { x: 0.15, y: 0.85, z: 0 },      // Right hip
+            'Foot-Knee_L': { x: -0.35, y: 1.35, z: 0.1 },    // Left shoulder
+            'Foot-Knee_R': { x: 0.35, y: 1.35, z: 0.1 },     // Right shoulder
+            'Knee-Waist_L': { x: -0.4, y: 0.95, z: 0.05 },    // Left elbow
+            'Knee-Waist_R': { x: 0.4, y: 0.95, z: 0.05 },     // Right elbow
+            'Waist-Neck_L': { x: -0.42, y: 0.6, z: 0.05 },   // Left wrist
+            'Waise-Neck_R': { x: 0.42, y: 0.6, z: 0.05 },    // Right wrist
+            'Neck-Head_L': { x: -0.15, y: 0.85, z: 0 },     // Left hip
+            'Neck-Head_R': { x: 0.15, y: 0.85, z: 0 },      // Right hip
             'Iliocr_L': { x: -0.18, y: 0.95, z: 0 },   // Left hip crest
             'Iliocr_R': { x: 0.18, y: 0.95, z: 0 },    // Right hip crest
             'Tib_L': { x: -0.12, y: 0.5, z: 0.05 },    // Left knee
@@ -914,7 +914,7 @@
             mainCamera.lookAt(0, 1, 0);
             
             // Auto-select first landmark
-            selectLandmark('Acr_L');
+            selectLandmark('Foot-Knee_L');
         }
         
         // Export functions
@@ -970,14 +970,14 @@ with open("landmark_distances.json", "w") as f:
         
         function getLandmarkDescription(name) {
             const descriptions = {
-                'Acr_L': 'Left Acromiale (shoulder tip)',
-                'Acr_R': 'Right Acromiale',
-                'Rad_L': 'Left Radiale (elbow)',
-                'Rad_R': 'Right Radiale',
-                'Styl_L': 'Left Stylion (wrist)',
-                'Styl_R': 'Right Stylion',
-                'Troc_L': 'Left Trochanterion (hip)',
-                'Troc_R': 'Right Trochanterion',
+                'Foot-Knee_L': 'Left Acromiale (shoulder tip)',
+                'Foot-Knee_R': 'Right Acromiale',
+                'Knee-Waist_L': 'Left Radiale (elbow)',
+                'Knee-Waist_R': 'Right Radiale',
+                'Waist-Neck_L': 'Left Stylion (wrist)',
+                'Waise-Neck_R': 'Right Stylion',
+                'Neck-Head_L': 'Left Trochanterion (hip)',
+                'Neck-Head_R': 'Right Trochanterion',
                 'Iliocr_L': 'Left Iliocristale (hip crest)',
                 'Iliocr_R': 'Right Iliocristale',
                 'Tib_L': 'Left Tibiale (knee)',
