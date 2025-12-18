@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """
 SMPL-X fitting with:
  - Mediapipe keypoints (world or pixel fallback)
@@ -21,9 +20,10 @@ import matplotlib.pyplot as plt
 
 # ========== CONFIG ==========
 IMAGES = {
-    'front': "dataset/image12.jpg",
-    'left': "dataset/image12_right.jpg",
-    'right': "dataset/image12_left.jpg",
+    'front': "synthetic_data_10_items\\synthetic_data\\images\\image_1.png",
+    # Optional: Add side views if available
+    'left': "synthetic_data_10_items\\synthetic_data\\images\\img_left_1.png",
+    'right': "synthetic_data_10_items\\synthetic_data\\images\\img_right_1.png",
 }
 MODEL_PATH = "full_pipeline/models/"  # SMPL-X model folder
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")

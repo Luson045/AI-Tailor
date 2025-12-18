@@ -12,10 +12,10 @@ from mpl_toolkits.mplot3d import Axes3D
 
 # ========== CONFIG ==========
 IMAGES = {
-    'front': "dataset/image1.jpg",
+    'front': "synthetic_data_10_items\synthetic_data\images\image_1.png",
     # Optional: Add side views if available
-    # 'left': "dataset/image1_right.jpg",
-    # 'right': "dataset/image1_left.jpg",
+    # 'left': "synthetic_data_10_items\synthetic_data\images\img_left_1.png",
+    # 'right': "synthetic_data_10_items\synthetic_data\images\img_right_1.png",
 }
 MODEL_PATH = "full_pipeline/models/"
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
