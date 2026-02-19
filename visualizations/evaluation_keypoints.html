@@ -603,11 +603,11 @@
             // Arms
             const armGeo = new THREE.CylinderGeometry(0.04, 0.04, 0.5, 8);
             const leftUpperArm = new THREE.Mesh(armGeo, material);
-            leftUpperArm.position.set(-0.35, 1.15, 0);
+            leftUpperArm.position.set(0.35, 1.15, 0);
             leftUpperArm.rotation.z = Math.PI / 6;
             
             const rightUpperArm = new THREE.Mesh(armGeo, material);
-            rightUpperArm.position.set(0.35, 1.15, 0);
+            rightUpperArm.position.set(-0.35, 1.15, 0);
             rightUpperArm.rotation.z = -Math.PI / 6;
             
             const leftLowerArm = new THREE.Mesh(armGeo, material);
@@ -825,7 +825,7 @@
             requestAnimationFrame(animate);
             
             if (referenceMesh) {
-                referenceMesh.rotation.y += 0.003;
+                //referenceMesh.rotation.y += 0.003;
             }
             
             mainRenderer.render(mainScene, mainCamera);
