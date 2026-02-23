@@ -1,0 +1,28 @@
+{
+    "Pose": {
+        "Acr": 328.01,
+        "Iliocr": 233.46,
+        "Rad": 601.73,
+        "Styl": 796.86,
+        "Tib": 185.72,
+        "Troc": 291.97,
+        "Mean": 406.29
+    },
+    "Shape": {
+        "Belly": 264.9,
+        "BellySide": 174.0,
+        "Chest": 303.48,
+        "FootKnee": 434.51,
+        "Hip": 300.06,
+        "KneeWaist": 436.39,
+        "LegSide": 200.11,
+        "NeckHead": 294.19,
+        "WaistNeck": 488.34,
+        "Mean": 321.78
+    },
+    "Height_Info": {
+        "predicted_height_cm": 178.4,
+        "actual_height_cm": 165.0,
+        "scale_factor": 0.9249
+    }
+}

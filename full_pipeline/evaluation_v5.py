@@ -1,8 +1,15 @@
-# ========== LANDMARK DISTANCE EVALUATION + VISUALIZATION ==========
+# ========== LANDMARK DISTANCE EVALUATION + VISUALIZATION (with Height Normalization) ==========
 import numpy as np
 import trimesh
 import pyrender
 import json
+import argparse
+import sys
+
+# ========== CONFIGURATION ==========
+# Set actual height in cm. If None, normalization will be skipped.
+# You can also pass this via command line: python evaluation_v5.py --actual_height 165
+ACTUAL_HEIGHT_CM = 165  # Set to None to disable normalization, or provide actual height in cm
 
 print("\n[INFO] Computing anthropometric distances (Pose + Shape comparison)...")
 
@@ -10,6 +17,45 @@ mesh_path = "fitted_smplx_mesh.obj"
 mesh = trimesh.load(mesh_path, process=True)
 vertices = np.array(mesh.vertices)
 faces = np.array(mesh.faces)
+
+# ========== COMPUTE PREDICTED HEIGHT ==========
+def compute_predicted_height(vertices):
+    """
+    Compute predicted height from mesh vertices.
+    Height is the Y-axis range (assuming Y is vertical).
+    Returns height in cm.
+    """
+    min_bounds = vertices.min(axis=0)
+    max_bounds = vertices.max(axis=0)
+    predicted_height_m = max_bounds[1] - min_bounds[1]  # Y-axis range in meters
+    predicted_height_cm = predicted_height_m * 100  # Convert to cm
+    return predicted_height_cm
+
+predicted_height_cm = compute_predicted_height(vertices)
+print(f"[INFO] Predicted height from mesh: {predicted_height_cm:.2f} cm")
+
+# ========== HEIGHT NORMALIZATION ==========
+# Parse command line arguments for actual height
+parser = argparse.ArgumentParser(description='Evaluate body measurements with height normalization')
+parser.add_argument('--actual_height', type=float, default=None,
+                    help='Actual height in cm for normalization (overrides config)')
+args = parser.parse_args()
+
+# Use command line argument if provided, otherwise use config
+actual_height_cm = args.actual_height if args.actual_height is not None else ACTUAL_HEIGHT_CM
+
+scale_factor = 1.0  # Default: no scaling
+if actual_height_cm is not None and actual_height_cm > 0:
+    if predicted_height_cm > 0:
+        scale_factor = actual_height_cm / predicted_height_cm
+        print(f"[INFO] Actual height: {actual_height_cm:.2f} cm")
+        print(f"[INFO] Scale factor: {scale_factor:.4f} (actual / predicted)")
+        print(f"[INFO] Applying height normalization to all measurements...")
+    else:
+        print(f"[WARNING] Predicted height is invalid ({predicted_height_cm:.2f} cm). Skipping normalization.")
+else:
+    print(f"[INFO] Actual height not provided. Measurements will not be normalized.")
+    print(f"[INFO] To enable normalization, set ACTUAL_HEIGHT_CM or use --actual_height flag")
 
 # ✅ POSE LANDMARKS (as before)
 pose_landmarks = {
@@ -21,7 +67,7 @@ pose_landmarks = {
     "Tib_L": 3673, "Tib_R": 6437         # Tibiale laterale (knee)
 }
 
-# ✅ SHAPE LANDMARKS (you’ll set actual indices later)
+# ✅ SHAPE LANDMARKS (you'll set actual indices later)
 shape_landmarks = {
     "Chest_L": 4490, "Chest_R": 7250,
     "Belly_L": 3263, "Belly_R": 6070,
@@ -54,8 +100,39 @@ def compute_distances(vertices, landmarks):
 pose_distances = compute_distances(vertices, pose_landmarks)
 shape_distances = compute_distances(vertices, shape_landmarks)
 
+# ---------- APPLY HEIGHT NORMALIZATION TO ALL MEASUREMENTS ----------
+def apply_scale_factor(measurements_dict, scale_factor):
+    """
+    Apply scale factor to all measurements in the dictionary.
+    Excludes 'Mean' from scaling, recalculates it after scaling other values.
+    """
+    scaled_measurements = {}
+    mean_values = []
+    
+    for key, value in measurements_dict.items():
+        if key != "Mean":
+            scaled_value = value * scale_factor
+            scaled_measurements[key] = round(scaled_value, 2)
+            mean_values.append(scaled_value)
+        else:
+            # Mean will be recalculated
+            pass
+    
+    # Recalculate mean from scaled values
+    if mean_values:
+        scaled_measurements["Mean"] = round(np.mean(mean_values), 2)
+    
+    return scaled_measurements
+
+if scale_factor != 1.0:
+    pose_distances = apply_scale_factor(pose_distances, scale_factor)
+    shape_distances = apply_scale_factor(shape_distances, scale_factor)
+    print(f"[INFO] All measurements scaled by factor: {scale_factor:.4f}")
+
 # ---------- PRINT RESULTS ----------
 print("\n[RESULTS] Anthropometric Measurements (mm):")
+if scale_factor != 1.0:
+    print(f"[NOTE] Measurements have been normalized using height scale factor: {scale_factor:.4f}")
 
 print("\n--- Pose-based Distances ---")
 print(f"{'Method':<20}{'Acr.':>8}{'Rad.':>8}{'Styl.':>8}{'Troc.':>8}{'Iliocr.':>10}{'Tib.':>8}{'Mean':>8}")
@@ -71,10 +148,18 @@ print("-" * 80)
 print(f"{'Ours (Shape)':<20}" + "".join([f"{shape_distances[n]:>10.2f}" for n in names]) + f"{shape_distances['Mean']:>10.2f}")
 
 # ---------- SAVE RESULTS ----------
-all_results = {"Pose": pose_distances, "Shape": shape_distances}
-with open("anthropometric_results.json", "w") as f:
+all_results = {
+    "Pose": pose_distances,
+    "Shape": shape_distances,
+    "Height_Info": {
+        "predicted_height_cm": round(predicted_height_cm, 2),
+        "actual_height_cm": round(actual_height_cm, 2) if actual_height_cm is not None else None,
+        "scale_factor": round(scale_factor, 4) if scale_factor != 1.0 else None
+    }
+}
+with open("scaled_anthropometric_results.json", "w") as f:
     json.dump(all_results, f, indent=4)
-print("\n[INFO] All results saved to anthropometric_results.json")
+print("\n[INFO] All results saved to scaled_anthropometric_results.json")
 
 # ---------- VISUALIZATION ----------
 # print("\n[INFO] Launching 3D viewer for validation...")
@@ -122,7 +207,7 @@ print("\n[INFO] All results saved to anthropometric_results.json")
 # ])
 # scene.add(pyrender.PerspectiveCamera(yfov=np.pi / 3.0), pose=camera_pose)
 
-# # --- Viewer / Fallback render ---
+# --- Viewer / Fallback render ---
 # try:
 #     pyrender.Viewer(scene, use_raymond_lighting=True)
 # except Exception as e:
@@ -131,3 +216,4 @@ print("\n[INFO] All results saved to anthropometric_results.json")
 #     color, _ = r.render(scene)
 #     trimesh.exchange.export.export_image(color, "anthropometric_validation.png")
 #     print("[INFO] Saved anthropometric_validation.png instead.")
+

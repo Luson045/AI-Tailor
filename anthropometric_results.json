@@ -1,0 +1,23 @@
+{
+    "Pose": {
+        "Acr": 354.64,
+        "Iliocr": 252.41,
+        "Rad": 650.58,
+        "Styl": 861.56,
+        "Tib": 200.8,
+        "Troc": 315.67,
+        "Mean": 439.28
+    },
+    "Shape": {
+        "Belly": 286.41,
+        "BellySide": 188.13,
+        "Chest": 328.12,
+        "FootKnee": 469.79,
+        "Hip": 324.42,
+        "KneeWaist": 471.82,
+        "LegSide": 216.36,
+        "NeckHead": 318.08,
+        "WaistNeck": 527.99,
+        "Mean": 347.9
+    }
+}
